@@ -49,6 +49,11 @@ body {
   background: #334155;
   border-radius: 4px;
   font-size: 13px;
+  cursor: pointer;
+}
+
+#users li:hover {
+  background: #475569;
 }
 
 /* Main chat area */
@@ -110,6 +115,64 @@ h2 {
   border-radius: 6px;
   background: #22c55e;
   color: #06290f;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Direct Message Panel */
+.dm-box {
+  margin-top: 12px;
+  background: #0f172a;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+#dm-header {
+  margin: 0 0 8px;
+  font-size: 14px;
+  text-align: center;
+  color: #93c5fd; /* light blue accent */
+}
+
+#dm-messages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+#dm-messages li {
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  word-wrap: break-word;
+}
+
+/* Style for private messages */
+.private-message {
+  background: #3b82f6; /* blue */
+  color: #fff;
+  font-style: italic;
+  text-align: left;
+}
+
+/* DM input composer */
+#dm-input {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+}
+
+#dm-send-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #fff;
   font-weight: bold;
   cursor: pointer;
 }
