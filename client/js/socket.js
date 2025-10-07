@@ -1,4 +1,3 @@
-// client/js/socket.js
 const socket = io();
 
 // Elements
@@ -9,6 +8,8 @@ const usersEl = document.getElementById('users');
 
 const dmBox = document.getElementById('dm-box');
 const dmHeader = document.getElementById('dm-header');
+const dmTitle = document.getElementById('dm-title');
+const dmCloseBtn = document.getElementById('dm-close');
 const dmMessages = document.getElementById('dm-messages');
 const dmInput = document.getElementById('dm-input');
 const dmSendBtn = document.getElementById('dm-send-btn');
@@ -44,32 +45,28 @@ function addDMMessage(msg, isOwn = false) {
 
 // --- Socket listeners ---
 
-// Chat history on join
 socket.on('chat_history', (history) => {
-  messagesEl.innerHTML = ''; // clear
+  messagesEl.innerHTML = '';
   history.forEach((msg) => {
     addMessage(msg, msg.sender === myUsername);
   });
 });
 
-// New chat message
 socket.on('chat_message', (msg) => {
   addMessage(msg, msg.sender === myUsername);
 });
 
-// User list updates
 socket.on('user_list', (usernames) => {
   usersEl.innerHTML = '';
   usernames.forEach((name) => {
     const li = document.createElement('li');
     li.textContent = name;
 
-    // Click to open DM panel
     li.addEventListener('click', () => {
-      if (name === myUsername) return; // can't DM yourself
+      if (name === myUsername) return;
       activeDM = name;
-      dmHeader.textContent = `Direct message with ${name}`;
-      dmMessages.innerHTML = ''; // clear old DM messages
+      dmTitle.textContent = `Direct message with ${name}`;
+      dmMessages.innerHTML = '';
       dmBox.style.display = 'flex';
     });
 
@@ -77,7 +74,6 @@ socket.on('user_list', (usernames) => {
   });
 });
 
-// Private messages
 socket.on('private_message', (msg) => {
   const isOwn = msg.from === myUsername;
   addDMMessage(msg, isOwn);
@@ -107,4 +103,34 @@ function sendDM() {
 dmSendBtn.addEventListener('click', sendDM);
 dmInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendDM();
+});
+
+// --- DM Panel Close ---
+dmCloseBtn.addEventListener('click', () => {
+  dmBox.style.display = 'none';
+  activeDM = null;
+});
+
+// --- DM Panel Drag ---
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+dmHeader.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  offsetX = e.clientX - dmBox.offsetLeft;
+  offsetY = e.clientY - dmBox.offsetTop;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    dmBox.style.left = `${e.clientX - offsetX}px`;
+    dmBox.style.top = `${e.clientY - offsetY}px`;
+    dmBox.style.right = 'auto';
+    dmBox.style.bottom = 'auto';
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
 });

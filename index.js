@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -34,7 +33,7 @@ io.on('connection', (socket) => {
     io.emit('user_list', Object.values(users));
   });
 
-  // Handle chat messages
+  // Handle public chat messages
   socket.on('chat_message', (msg) => {
     const message = {
       sender: users[socket.id] || 'Anonymous',
@@ -42,11 +41,24 @@ io.on('connection', (socket) => {
       timestamp: new Date().toISOString()
     };
     chatHistory.push(message);
-
-    // Limit history size (optional, e.g. last 100 messages)
     if (chatHistory.length > 100) chatHistory.shift();
-
     io.emit('chat_message', message);
+  });
+
+  // ✅ Handle private messages
+  socket.on('private_message', ({ to, text }) => {
+    const fromUser = users[socket.id];
+    const targetId = Object.keys(users).find(id => users[id] === to);
+    if (targetId) {
+      const message = {
+        from: fromUser,
+        to,
+        text,
+        timestamp: new Date().toISOString()
+      };
+      io.to(targetId).emit('private_message', message); // send to recipient
+      socket.emit('private_message', message);          // echo back to sender
+    }
   });
 
   // Handle disconnect

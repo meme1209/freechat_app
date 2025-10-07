@@ -119,28 +119,56 @@ h2 {
   cursor: pointer;
 }
 
-/* Direct Message Panel */
+/* Floating Direct Message Panel */
 .dm-box {
-  margin-top: 12px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  min-width: 200px;
+  max-width: 500px;
+  height: 250px;
+  min-height: 150px;
+  max-height: 500px;
   background: #0f172a;
+  border: 2px solid #3b82f6;
   border-radius: 6px;
-  padding: 8px;
   display: flex;
   flex-direction: column;
+  resize: both;
+  overflow: hidden;
+  z-index: 1000;
 }
 
-#dm-header {
-  margin: 0 0 8px;
+/* Header bar for dragging */
+.dm-header {
+  background: #1e40af;
+  color: #fff;
+  padding: 6px 8px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 14px;
-  text-align: center;
-  color: #93c5fd; /* light blue accent */
+}
+
+#dm-title {
+  font-weight: bold;
+}
+
+#dm-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 #dm-messages {
   list-style: none;
-  padding: 0;
-  margin: 0 0 8px;
-  max-height: 150px;
+  padding: 6px;
+  margin: 0;
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -153,7 +181,7 @@ h2 {
 
 /* Style for private messages */
 .private-message {
-  background: #3b82f6; /* blue */
+  background: #3b82f6;
   color: #fff;
   font-style: italic;
   text-align: left;

@@ -23,17 +23,20 @@
           <input id="message-input" placeholder="Type a message..." autocomplete="off" />
           <button id="send-btn">Send</button>
         </div>
-
-        <!-- Direct Message Panel -->
-        <div id="dm-box" class="dm-box" style="display:none;">
-          <h3 id="dm-header">Direct Message</h3>
-          <ul id="dm-messages"></ul>
-          <div class="composer">
-            <input id="dm-input" placeholder="Type a private message..." autocomplete="off" />
-            <button id="dm-send-btn">Send</button>
-          </div>
-        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Floating Direct Message Panel -->
+  <div id="dm-box" class="dm-box" style="display:none;">
+    <div id="dm-header" class="dm-header">
+      <span id="dm-title">Direct Message</span>
+      <button id="dm-close">✕</button>
+    </div>
+    <ul id="dm-messages"></ul>
+    <div class="composer">
+      <input id="dm-input" placeholder="Type a private message..." autocomplete="off" />
+      <button id="dm-send-btn">Send</button>
     </div>
   </div>
 
