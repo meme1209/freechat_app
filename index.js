@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
 // --- In-memory storage ---
 let chatHistory = [];          // stores { sender, text, timestamp }
 let users = {};                // socket.id -> username
+let dmHistory = {};            // stores { 'Alice|Bob': [ { from, to, text, timestamp } ] }
 
 // 🔌 Socket.IO logic
 io.on('connection', (socket) => {
@@ -45,7 +46,7 @@ io.on('connection', (socket) => {
     io.emit('chat_message', message);
   });
 
-  // ✅ Handle private messages
+  // ✅ Handle private messages with history
   socket.on('private_message', ({ to, text }) => {
     const fromUser = users[socket.id];
     const targetId = Object.keys(users).find(id => users[id] === to);
@@ -56,9 +57,24 @@ io.on('connection', (socket) => {
         text,
         timestamp: new Date().toISOString()
       };
-      io.to(targetId).emit('private_message', message); // send to recipient
-      socket.emit('private_message', message);          // echo back to sender
+
+      // Store DM history
+      const key = [fromUser, to].sort().join('|');
+      if (!dmHistory[key]) dmHistory[key] = [];
+      dmHistory[key].push(message);
+      if (dmHistory[key].length > 100) dmHistory[key].shift();
+
+      // Send to both users
+      io.to(targetId).emit('private_message', message);
+      socket.emit('private_message', message);
     }
+  });
+
+  // ✅ Handle DM history request
+  socket.on('request_dm_history', (targetUser) => {
+    const fromUser = users[socket.id];
+    const key = [fromUser, targetUser].sort().join('|');
+    socket.emit('dm_history', dmHistory[key] || []);
   });
 
   // Handle disconnect

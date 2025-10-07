@@ -13,6 +13,7 @@ const dmCloseBtn = document.getElementById('dm-close');
 const dmMessages = document.getElementById('dm-messages');
 const dmInput = document.getElementById('dm-input');
 const dmSendBtn = document.getElementById('dm-send-btn');
+const clearDMAlertsBtn = document.getElementById('clear-dm-alerts'); // ✅ NEW
 
 // --- Username setup ---
 let myUsername = null;
@@ -23,6 +24,7 @@ socket.emit('set_username', myUsername);
 
 // --- State ---
 let activeDM = null;
+const incomingDMs = new Set(); // track who messaged you
 
 // --- Helpers ---
 function addMessage(msg, isOwn = false) {
@@ -41,6 +43,17 @@ function addDMMessage(msg, isOwn = false) {
   li.className = 'private-message';
   dmMessages.appendChild(li);
   dmMessages.scrollTop = dmMessages.scrollHeight;
+}
+
+function updateUserHighlights() {
+  Array.from(usersEl.children).forEach((li) => {
+    const name = li.textContent;
+    if (incomingDMs.has(name)) {
+      li.classList.add('user-highlight'); // ✅ use class instead of inline styles
+    } else {
+      li.classList.remove('user-highlight');
+    }
+  });
 }
 
 // --- Socket listeners ---
@@ -68,15 +81,32 @@ socket.on('user_list', (usernames) => {
       dmTitle.textContent = `Direct message with ${name}`;
       dmMessages.innerHTML = '';
       dmBox.style.display = 'flex';
+      socket.emit('request_dm_history', name);
+      incomingDMs.delete(name); // clear highlight
+      updateUserHighlights();
     });
 
     usersEl.appendChild(li);
   });
+
+  updateUserHighlights(); // refresh highlights after list update
 });
 
 socket.on('private_message', (msg) => {
   const isOwn = msg.from === myUsername;
   addDMMessage(msg, isOwn);
+
+  if (!isOwn) {
+    incomingDMs.add(msg.from);
+    updateUserHighlights();
+  }
+});
+
+socket.on('dm_history', (messages) => {
+  messages.forEach((msg) => {
+    const isOwn = msg.from === myUsername;
+    addDMMessage(msg, isOwn);
+  });
 });
 
 // --- Sending messages ---
@@ -133,4 +163,10 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('mouseup', () => {
   isDragging = false;
+});
+
+// --- Clear DM Alerts Button ---
+clearDMAlertsBtn.addEventListener('click', () => {
+  incomingDMs.clear();
+  updateUserHighlights();
 });
