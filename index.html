@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chat App — Login / Sign up</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Welcome — Chat App</h2>
+      <div><button class="button" id="toRooms">Continue as Guest</button></div>
+    </div>
+
+    <div id="notice" class="notice small">This is a demo single-file app. Credentials are stored on your device only.</div>
+
+    <section style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;">
+      <div>
+        <h3>Login</h3>
+        <input id="loginUser" class="input" placeholder="Username">
+        <input id="loginPass" type="password" class="input" placeholder="Password" style="margin-top:8px;">
+        <div style="margin-top:8px;">
+          <button class="button" id="btnLogin">Login</button>
+        </div>
+        <div id="loginMsg" class="small"></div>
+      </div>
+      <div>
+        <h3>Sign up</h3>
+        <input id="suUser" class="input" placeholder="Choose username">
+        <input id="suPass" type="password" class="input" placeholder="Choose password" style="margin-top:8px;">
+        <div style="margin-top:8px;">
+          <button class="button" id="btnSignup">Sign up</button>
+        </div>
+        <div id="suMsg" class="small"></div>
+      </div>
+    </section>
+
+    <p class="small" style="margin-top:16px;">Admin account is embedded in the app code. Logging in with it grants admin privileges to the embedded owner account only.</p>
+  </div>
+
+<script src="assets/app.js"></script>
+<script>
+document.getElementById('toRooms').addEventListener('click', ()=>{ window.location.href='rooms.html'; });
+
+document.getElementById('btnSignup').addEventListener('click', async ()=>{
+  const u=document.getElementById('suUser').value;
+  const p=document.getElementById('suPass').value;
+  const msg=document.getElementById('suMsg');
+  msg.textContent = '';
+  try {
+    await FCA.signup(u,p);
+    msg.textContent = 'Signup successful. You can now log in.';
+  } catch(e) {
+    msg.textContent = e.message;
+  }
+});
+
+document.getElementById('btnLogin').addEventListener('click', async ()=>{
+  const u=document.getElementById('loginUser').value;
+  const p=document.getElementById('loginPass').value;
+  const msg=document.getElementById('loginMsg');
+  msg.textContent = '';
+  try {
+    const res = await FCA.login(u,p);
+    msg.textContent = 'Login successful. Redirecting...';
+    setTimeout(()=>{ window.location.href='rooms.html'; }, 500);
+  } catch(e) {
+    msg.textContent = e.message;
+  }
+});
+</script>
+</body>
+</html>

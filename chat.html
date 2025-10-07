@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chat App — Chat</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 id="roomTitle">Chat</h2>
+      <div>
+        <button class="button" onclick="window.location.href='rooms.html'">Back to Rooms</button>
+      </div>
+    </div>
+
+    <div id="messages" style="min-height:300px; margin-top:12px; border:1px solid #eee; padding:12px; border-radius:6px; background:#fafafa; overflow:auto;"></div>
+
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <input id="msgText" class="input" placeholder="Type message...">
+      <button id="sendBtn" class="button">Send</button>
+    </div>
+  </div>
+
+<script src="assets/app.js"></script>
+<script>
+function loadMessages(room){
+  const key = 'fc_messages_v1_' + room;
+  const raw = localStorage.getItem(key);
+  return raw ? JSON.parse(raw) : [];
+}
+function saveMessages(room, msgs){
+  const key = 'fc_messages_v1_' + room;
+  localStorage.setItem(key, JSON.stringify(msgs));
+}
+
+const params = new URLSearchParams(window.location.search);
+const room = params.get('room') || 'general';
+document.getElementById('roomTitle').textContent = 'Room: ' + room;
+
+const msgsDiv = document.getElementById('messages');
+function render(){
+  const msgs = loadMessages(room);
+  msgsDiv.innerHTML = '';
+  msgs.forEach(m=>{
+    const el = document.createElement('div');
+    el.style.padding = '8px';
+    el.style.borderBottom = '1px solid #eee';
+    el.innerHTML = '<strong>'+escapeHtml(m.user)+'</strong> <span class="small">'+new Date(m.ts).toLocaleString()+'</span><div>'+escapeHtml(m.text)+'</div>';
+    msgsDiv.appendChild(el);
+  });
+  msgsDiv.scrollTop = msgsDiv.scrollHeight;
+}
+
+function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+render();
+
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('msgText').value.trim();
+  if (!text) return;
+  const user = FCA.currentUser();
+  const username = user ? user.username : 'Guest';
+  const msgs = loadMessages(room);
+  msgs.push({ user: username, text, ts: Date.now() });
+  saveMessages(room, msgs);
+  document.getElementById('msgText').value = '';
+  render();
+});
+</script>
+</body>
+</html>

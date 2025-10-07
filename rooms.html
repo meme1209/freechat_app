@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chat App — Rooms</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Chat Rooms</h2>
+      <div>
+        <span id="who" class="small"></span>
+        <button class="button" id="btnLogout">Logout</button>
+        <button class="button" id="btnFriends">Friends</button>
+      </div>
+    </div>
+
+    <div id="roomsList" class="list"></div>
+    <div class="small" style="margin-top:12px;">
+      <button class="button" id="createRoom">Create Room</button>
+      <input id="newRoomName" class="input" placeholder="New room id" style="display:inline-block; width:200px; margin-left:8px;">
+    </div>
+  </div>
+
+<script src="assets/app.js"></script>
+<script>
+const user = FCA.currentUser();
+document.getElementById('who').textContent = user ? 'Signed in as ' + user.username + (user.isAdmin ? ' (admin)' : '') : 'Not signed in';
+
+document.getElementById('btnLogout').addEventListener('click', ()=>{
+  FCA.logout();
+  window.location.href = 'index.html';
+});
+document.getElementById('btnFriends').addEventListener('click', ()=>{ window.location.href='friends.html'; });
+
+const rooms = FCA.loadRooms();
+const list = document.getElementById('roomsList');
+list.innerHTML = '';
+Object.values(rooms).forEach(r=>{
+  const d = document.createElement('div');
+  d.className = 'room';
+  d.textContent = r.name + ' ('+r.id+')';
+  d.addEventListener('click', ()=>{ window.location.href = 'chat.html?room='+encodeURIComponent(r.id); });
+  list.appendChild(d);
+});
+
+document.getElementById('createRoom').addEventListener('click', ()=>{
+  const id = document.getElementById('newRoomName').value.trim();
+  if (!id) return alert('Enter a room id');
+  const rooms = FCA.loadRooms();
+  if (rooms[id]) return alert('Room exists');
+  rooms[id] = {{id, name: id}};
+  localStorage.setItem('fc_rooms_v1', JSON.stringify(rooms));
+  location.reload();
+});
+</script>
+</body>
+</html>

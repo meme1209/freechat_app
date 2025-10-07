@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chat App — Friends</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Friends</h2>
+      <div>
+        <button class="button" onclick="window.location.href='rooms.html'">Rooms</button>
+        <button class="button" onclick="window.location.href='index.html'">Home</button>
+      </div>
+    </div>
+
+    <div id="friendsArea"></div>
+  </div>
+
+<script src="assets/app.js"></script>
+<script>
+const user = FCA.currentUser();
+const area = document.getElementById('friendsArea');
+if (!user) {{
+  area.innerHTML = '<div class="notice">You are not signed in. Please log in from home.</div>';
+}} else {{
+  const users = (function(){{
+    const raw = localStorage.getItem('fc_users_v1');
+    return raw ? JSON.parse(raw) : {{}};
+  }})();
+  const my = users[user.username];
+  let html = '<h3>My friends</h3>';
+  if (!my.friends || my.friends.length===0) html += '<div class="small">No friends yet.</div>';
+  else {{
+    html += '<div class="friends-list">';
+    my.friends.forEach(f => {{
+      html += '<div class="room">'+f+' <button onclick="removeFriend(\''+f+'\')">Remove</button></div>';
+    }});
+    html += '</div>';
+  }}
+  html += '<h3 style="margin-top:12px;">Find users to friend</h3>';
+  html += '<div><input id="searchUser" class="input" placeholder="username"><button class="button" id="btnAdd">Add</button></div>';
+  area.innerHTML = html;
+
+  window.removeFriend = function(f){ FCA.removeFriend(user.username, f); location.reload(); };
+  document.getElementById('btnAdd').addEventListener('click', ()=>{
+    const t = document.getElementById('searchUser').value.trim();
+    if (!t) return alert('Enter username');
+    if (!users[t]) return alert('No such user');
+    FCA.addFriend(user.username, t);
+    location.reload();
+  });
+}}
+</script>
+</body>
+</html>

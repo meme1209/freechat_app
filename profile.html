@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Profile</title><link rel="stylesheet" href="assets/app.css"></head><body>
+<div class="container">
+<div class="header"><h2>Profile</h2><div><button class="button" onclick="window.location.href='rooms.html'">Rooms</button></div></div>
+<div id="profileArea"></div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+const user = FCA.currentUser();
+const area = document.getElementById('profileArea');
+if (!user) {
+  area.innerHTML = '<div class="notice">Not signed in.</div>';
+} else {
+  area.innerHTML = '<div><strong>Username:</strong> '+user.username+'</div>' +
+                   '<div style="margin-top:8px;"><strong>Friends:</strong> '+(user.friends?user.friends.length:0)+'</div>' +
+                   '<div style="margin-top:8px;"><button class="button" onclick="window.location.href=\'friends.html\'">Manage Friends</button></div>';
+}
+</script></body></html>
