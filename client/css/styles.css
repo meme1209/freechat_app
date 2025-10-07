@@ -113,6 +113,9 @@ h2 {
   padding: 6px 10px;
   border-radius: 6px;
   word-wrap: break-word;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .my-message {
@@ -127,6 +130,13 @@ h2 {
   text-align: left;
 }
 
+.message-timestamp {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+/* Composer */
 .composer {
   display: flex;
   gap: 8px;
@@ -170,7 +180,6 @@ h2 {
   z-index: 1000;
 }
 
-/* Header bar for dragging */
 .dm-header {
   background: #1e40af;
   color: #fff;
@@ -194,7 +203,6 @@ h2 {
   cursor: pointer;
 }
 
-/* DM message list */
 .dm-messages {
   list-style: none;
   padding: 6px;
@@ -208,6 +216,9 @@ h2 {
   padding: 6px 10px;
   border-radius: 4px;
   word-wrap: break-word;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .private-message {
@@ -217,7 +228,6 @@ h2 {
   text-align: left;
 }
 
-/* DM input and send button */
 .dm-input {
   flex: 1;
   padding: 6px;
@@ -235,10 +245,62 @@ h2 {
   cursor: pointer;
 }
 
-/* Typing indicator */
 .dm-typing {
   font-style: italic;
   color: #93c5fd;
   padding: 4px 8px;
   font-size: 12px;
+}
+
+/* Group Chat Room Panel */
+#room-panel {
+  margin-top: 16px;
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+#room-panel h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  text-align: center;
+}
+
+#room-messages {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#room-messages li {
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: #334155;
+  color: #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#room-input,
+#room-text-input {
+  width: 100%;
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+#room-join-btn,
+#room-send-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
 }

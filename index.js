@@ -19,12 +19,13 @@ app.get('/', (req, res) => {
 let chatHistory = [];          // stores { sender, text, timestamp }
 let users = {};                // socket.id -> username
 let dmHistory = {};            // stores { 'Alice|Bob': [ { from, to, text, timestamp } ] }
+let roomHistory = {};          // stores { roomName: [ { sender, text, timestamp } ] }
 
 // 🔌 Socket.IO logic
 io.on('connection', (socket) => {
   console.log('a user connected:', socket.id);
 
-  // Send chat history to the new user
+  // Send public chat history
   socket.emit('chat_history', chatHistory);
 
   // Handle username set
@@ -58,13 +59,11 @@ io.on('connection', (socket) => {
         timestamp: new Date().toISOString()
       };
 
-      // Store DM history
       const key = [fromUser, to].sort().join('|');
       if (!dmHistory[key]) dmHistory[key] = [];
       dmHistory[key].push(message);
       if (dmHistory[key].length > 100) dmHistory[key].shift();
 
-      // Send to both users
       io.to(targetId).emit('private_message', message);
       socket.emit('private_message', message);
     }
@@ -84,6 +83,28 @@ io.on('connection', (socket) => {
     if (targetId) {
       io.to(targetId).emit('dm_typing', fromUser);
     }
+  });
+
+  // ✅ Handle group room join and history
+  socket.on('join_room', (roomName) => {
+    socket.join(roomName);
+    socket.emit('room_history', roomHistory[roomName] || []);
+  });
+
+  // ✅ Handle group room messages
+  socket.on('room_message', ({ room, text }) => {
+    const sender = users[socket.id];
+    const message = {
+      sender,
+      text,
+      timestamp: new Date().toISOString()
+    };
+
+    if (!roomHistory[room]) roomHistory[room] = [];
+    roomHistory[room].push(message);
+    if (roomHistory[room].length > 100) roomHistory[room].shift();
+
+    io.to(room).emit('room_message', message);
   });
 
   // Handle disconnect
