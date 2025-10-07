@@ -1,33 +1,36 @@
-// server/server.js
-const path = require('path');
+// index.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve the client folder (your HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '..', 'client')));
+// ✅ Serve static files from client folder
+app.use(express.static(path.join(__dirname, 'client')));
 
-// Socket.IO connection
+// ✅ Optional: fallback so hitting "/" loads index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+});
+
+// 🔌 Socket.IO logic
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('a user connected');
 
-  // Listen for chat messages
   socket.on('chat_message', (msg) => {
-    // Broadcast to everyone
     io.emit('chat_message', msg);
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log('user disconnected');
   });
 });
 
-// Start the server
+// 🚀 Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`FreeChat running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
