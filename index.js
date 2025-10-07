@@ -8,11 +8,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// ✅ Serve static files from client folder
+// ✅ Serve static files from /client
 app.use(express.static(path.join(__dirname, 'client')));
 
-// ✅ Optional: fallback so hitting "/" loads index.html
-app.get('*', (req, res) => {
+// ✅ Root route explicitly serves index.html
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'index.html'));
 });
 
