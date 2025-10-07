@@ -7,12 +7,12 @@ const sendBtn = document.getElementById('send-btn');
 const usersEl = document.getElementById('users');
 const clearDMAlertsBtn = document.getElementById('clear-dm-alerts');
 
-// Room elements
 const roomInput = document.getElementById('room-input');
 const roomJoinBtn = document.getElementById('room-join-btn');
 const roomMessages = document.getElementById('room-messages');
 const roomTextInput = document.getElementById('room-text-input');
 const roomSendBtn = document.getElementById('room-send-btn');
+const roomMembersEl = document.getElementById('room-members');
 
 // --- Username setup ---
 let myUsername = null;
@@ -141,7 +141,6 @@ function updateUserHighlights() {
 }
 
 // --- Socket Listeners ---
-
 socket.on('chat_history', (history) => {
   messagesEl.innerHTML = '';
   history.forEach((msg) => {
@@ -259,3 +258,32 @@ function addRoomMessage(msg) {
   roomMessages.appendChild(li);
   roomMessages.scrollTop = roomMessages.scrollHeight;
 }
+
+// --- Room Members + Kick ---
+socket.on('room_members', (members) => {
+  roomMembersEl.innerHTML = '';
+  const currentRoom = roomInput.value.trim();
+
+  members.forEach((name) => {
+    const li = document.createElement('li');
+    li.textContent = name;
+
+    if (name !== myUsername) {
+      const kickBtn = document.createElement('button');
+      kickBtn.className = 'kick-btn';
+      kickBtn.textContent = 'Kick';
+      kickBtn.addEventListener('click', () => {
+        socket.emit('kick_user', { room: currentRoom, target: name });
+      });
+      li.appendChild(kickBtn);
+    }
+
+    roomMembersEl.appendChild(li);
+  });
+});
+
+socket.on('kicked', (room) => {
+  alert(`You were removed from room: ${room}`);
+  roomMessages.innerHTML = '';
+  roomMembersEl.innerHTML = '';
+});
