@@ -9,11 +9,20 @@
 <body>
   <div class="app">
     <div class="chat">
-      <h2>FreeChat</h2>
-      <ul id="messages"></ul>
-      <div class="composer">
-        <input id="message-input" placeholder="Type a message..." autocomplete="off" />
-        <button id="send-btn">Send</button>
+      <!-- Sidebar for online users -->
+      <div id="sidebar">
+        <h3>Online Users</h3>
+        <ul id="users"></ul>
+      </div>
+
+      <!-- Main chat area -->
+      <div class="chat-main">
+        <h2>FreeChat</h2>
+        <ul id="messages"></ul>
+        <div class="composer">
+          <input id="message-input" placeholder="Type a message..." autocomplete="off" />
+          <button id="send-btn">Send</button>
+        </div>
       </div>
     </div>
   </div>

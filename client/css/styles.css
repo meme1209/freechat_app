@@ -10,10 +10,50 @@ body {
 }
 
 .chat {
-  width: 400px;
+  width: 600px;
   background: #1e293b;
   border-radius: 8px;
   padding: 16px;
+  display: flex;
+  flex-direction: row; /* sidebar + main chat side by side */
+  gap: 12px;
+}
+
+/* Sidebar for users */
+#sidebar {
+  width: 150px;
+  background: #0f172a;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  text-align: center;
+}
+
+#users {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+#users li {
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  background: #334155;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* Main chat area */
+.chat-main {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -35,8 +75,21 @@ h2 {
 #messages li {
   margin-bottom: 8px;
   padding: 6px 10px;
-  background: #334155;
   border-radius: 6px;
+  word-wrap: break-word;
+}
+
+/* Differentiate own vs others' messages */
+.my-message {
+  background: #22c55e;
+  color: #06290f;
+  text-align: right;
+}
+
+.other-message {
+  background: #334155;
+  color: #e5e7eb;
+  text-align: left;
 }
 
 .composer {
