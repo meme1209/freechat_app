@@ -5,15 +5,7 @@ const messagesEl = document.getElementById('messages');
 const inputEl = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const usersEl = document.getElementById('users');
-
-const dmBox = document.getElementById('dm-box');
-const dmHeader = document.getElementById('dm-header');
-const dmTitle = document.getElementById('dm-title');
-const dmCloseBtn = document.getElementById('dm-close');
-const dmMessages = document.getElementById('dm-messages');
-const dmInput = document.getElementById('dm-input');
-const dmSendBtn = document.getElementById('dm-send-btn');
-const clearDMAlertsBtn = document.getElementById('clear-dm-alerts'); // ✅ NEW
+const clearDMAlertsBtn = document.getElementById('clear-dm-alerts');
 
 // --- Username setup ---
 let myUsername = null;
@@ -23,10 +15,10 @@ while (!myUsername) {
 socket.emit('set_username', myUsername);
 
 // --- State ---
-let activeDM = null;
 const incomingDMs = new Set(); // track who messaged you
+const dmPanels = {};           // username → panel DOM
 
-// --- Helpers ---
+// --- Public Chat Helpers ---
 function addMessage(msg, isOwn = false) {
   const li = document.createElement('li');
   li.textContent = `[${msg.sender}] ${msg.text}`;
@@ -35,28 +27,91 @@ function addMessage(msg, isOwn = false) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-function addDMMessage(msg, isOwn = false) {
+// --- DM Helpers ---
+function createDMPanel(username) {
+  if (dmPanels[username]) return;
+
+  const panel = document.createElement('div');
+  panel.className = 'dm-box';
+  panel.style.display = 'flex';
+  panel.style.zIndex = 1000;
+
+  panel.innerHTML = `
+    <div class="dm-header">
+      <span class="dm-title">Direct message with ${username}</span>
+      <button class="dm-close">✕</button>
+    </div>
+    <ul class="dm-messages"></ul>
+    <div class="composer">
+      <input class="dm-input" placeholder="Type a private message..." autocomplete="off" />
+      <button class="dm-send-btn">Send</button>
+    </div>
+    <div class="dm-typing" style="font-size:12px; padding:4px 8px; color:#93c5fd;"></div>
+  `;
+
+  document.body.appendChild(panel);
+  dmPanels[username] = panel;
+
+  const closeBtn = panel.querySelector('.dm-close');
+  closeBtn.addEventListener('click', () => {
+    panel.remove();
+    delete dmPanels[username];
+  });
+
+  const input = panel.querySelector('.dm-input');
+  const sendBtn = panel.querySelector('.dm-send-btn');
+  const messagesEl = panel.querySelector('.dm-messages');
+
+  input.addEventListener('input', () => {
+    socket.emit('dm_typing', { to: username });
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendDM(username, input, messagesEl);
+  });
+
+  sendBtn.addEventListener('click', () => {
+    sendDM(username, input, messagesEl);
+  });
+
+  socket.emit('request_dm_history', username);
+  incomingDMs.delete(username);
+  updateUserHighlights();
+}
+
+function sendDM(to, inputEl, messagesEl) {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  socket.emit('private_message', { to, text });
+  inputEl.value = '';
+}
+
+function addDMMessage(msg) {
+  const panel = dmPanels[msg.from === myUsername ? msg.to : msg.from];
+  if (!panel) return;
+
+  const messagesEl = panel.querySelector('.dm-messages');
   const li = document.createElement('li');
-  li.textContent = isOwn
+  li.textContent = msg.from === myUsername
     ? `(You → ${msg.to}) ${msg.text}`
     : `(DM from ${msg.from}) ${msg.text}`;
   li.className = 'private-message';
-  dmMessages.appendChild(li);
-  dmMessages.scrollTop = dmMessages.scrollHeight;
+  messagesEl.appendChild(li);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 function updateUserHighlights() {
   Array.from(usersEl.children).forEach((li) => {
     const name = li.textContent;
     if (incomingDMs.has(name)) {
-      li.classList.add('user-highlight'); // ✅ use class instead of inline styles
+      li.classList.add('user-highlight');
     } else {
       li.classList.remove('user-highlight');
     }
   });
 }
 
-// --- Socket listeners ---
+// --- Socket Listeners ---
 
 socket.on('chat_history', (history) => {
   messagesEl.innerHTML = '';
@@ -77,26 +132,21 @@ socket.on('user_list', (usernames) => {
 
     li.addEventListener('click', () => {
       if (name === myUsername) return;
-      activeDM = name;
-      dmTitle.textContent = `Direct message with ${name}`;
-      dmMessages.innerHTML = '';
-      dmBox.style.display = 'flex';
-      socket.emit('request_dm_history', name);
-      incomingDMs.delete(name); // clear highlight
-      updateUserHighlights();
+      createDMPanel(name);
     });
 
     usersEl.appendChild(li);
   });
 
-  updateUserHighlights(); // refresh highlights after list update
+  updateUserHighlights();
 });
 
 socket.on('private_message', (msg) => {
-  const isOwn = msg.from === myUsername;
-  addDMMessage(msg, isOwn);
+  const target = msg.from === myUsername ? msg.to : msg.from;
+  if (!dmPanels[target]) createDMPanel(target);
+  addDMMessage(msg);
 
-  if (!isOwn) {
+  if (msg.from !== myUsername) {
     incomingDMs.add(msg.from);
     updateUserHighlights();
   }
@@ -104,12 +154,21 @@ socket.on('private_message', (msg) => {
 
 socket.on('dm_history', (messages) => {
   messages.forEach((msg) => {
-    const isOwn = msg.from === myUsername;
-    addDMMessage(msg, isOwn);
+    addDMMessage(msg);
   });
 });
 
-// --- Sending messages ---
+socket.on('dm_typing', (fromUser) => {
+  const panel = dmPanels[fromUser];
+  if (!panel) return;
+  const typingEl = panel.querySelector('.dm-typing');
+  typingEl.textContent = `${fromUser} is typing...`;
+  setTimeout(() => {
+    typingEl.textContent = '';
+  }, 2000);
+});
+
+// --- Public Message Sending ---
 function sendMessage() {
   const text = inputEl.value.trim();
   if (!text) return;
@@ -120,49 +179,6 @@ function sendMessage() {
 sendBtn.addEventListener('click', sendMessage);
 inputEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();
-});
-
-// --- Sending DMs ---
-function sendDM() {
-  const text = dmInput.value.trim();
-  if (!text || !activeDM) return;
-  socket.emit('private_message', { to: activeDM, text });
-  dmInput.value = '';
-}
-
-dmSendBtn.addEventListener('click', sendDM);
-dmInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') sendDM();
-});
-
-// --- DM Panel Close ---
-dmCloseBtn.addEventListener('click', () => {
-  dmBox.style.display = 'none';
-  activeDM = null;
-});
-
-// --- DM Panel Drag ---
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
-
-dmHeader.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  offsetX = e.clientX - dmBox.offsetLeft;
-  offsetY = e.clientY - dmBox.offsetTop;
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (isDragging) {
-    dmBox.style.left = `${e.clientX - offsetX}px`;
-    dmBox.style.top = `${e.clientY - offsetY}px`;
-    dmBox.style.right = 'auto';
-    dmBox.style.bottom = 'auto';
-  }
-});
-
-document.addEventListener('mouseup', () => {
-  isDragging = false;
 });
 
 // --- Clear DM Alerts Button ---

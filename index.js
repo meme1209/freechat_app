@@ -77,6 +77,15 @@ io.on('connection', (socket) => {
     socket.emit('dm_history', dmHistory[key] || []);
   });
 
+  // ✅ Handle DM typing indicator
+  socket.on('dm_typing', ({ to }) => {
+    const fromUser = users[socket.id];
+    const targetId = Object.keys(users).find(id => users[id] === to);
+    if (targetId) {
+      io.to(targetId).emit('dm_typing', fromUser);
+    }
+  });
+
   // Handle disconnect
   socket.on('disconnect', () => {
     const username = users[socket.id];

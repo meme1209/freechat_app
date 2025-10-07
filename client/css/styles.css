@@ -182,11 +182,11 @@ h2 {
   font-size: 14px;
 }
 
-#dm-title {
+.dm-title {
   font-weight: bold;
 }
 
-#dm-close {
+.dm-close {
   background: transparent;
   border: none;
   color: #fff;
@@ -194,7 +194,8 @@ h2 {
   cursor: pointer;
 }
 
-#dm-messages {
+/* DM message list */
+.dm-messages {
   list-style: none;
   padding: 6px;
   margin: 0;
@@ -202,7 +203,7 @@ h2 {
   overflow-y: auto;
 }
 
-#dm-messages li {
+.dm-messages li {
   margin-bottom: 6px;
   padding: 6px 10px;
   border-radius: 4px;
@@ -216,14 +217,15 @@ h2 {
   text-align: left;
 }
 
-#dm-input {
+/* DM input and send button */
+.dm-input {
   flex: 1;
   padding: 6px;
   border: none;
   border-radius: 6px;
 }
 
-#dm-send-btn {
+.dm-send-btn {
   padding: 6px 10px;
   border: none;
   border-radius: 6px;
@@ -231,4 +233,12 @@ h2 {
   color: #fff;
   font-weight: bold;
   cursor: pointer;
+}
+
+/* Typing indicator */
+.dm-typing {
+  font-style: italic;
+  color: #93c5fd;
+  padding: 4px 8px;
+  font-size: 12px;
 }
